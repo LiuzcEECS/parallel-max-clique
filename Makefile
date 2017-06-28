@@ -9,3 +9,7 @@ gen: gendata.c
 	
 clean:
 	rm serial gendata parallel
+
+test: serial parallel
+	time ./serial
+	time ./parallel
