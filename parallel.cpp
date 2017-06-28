@@ -16,6 +16,7 @@ bool Edge[MAXN][MAXN];  /* edge table */
 const float workload_partition[MACH_NUM + 1] = {0, 0.1, 0.3, 0.6, 1.0};
 
 int Ans;                /* best solution so far */
+int Ans_buffer;
 
 /* determine whether current_set + to_add is a clique */
 bool is_clique(const vector<int> partial, const int to_add)
@@ -30,8 +31,9 @@ bool is_clique(const vector<int> partial, const int to_add)
     return true;
 }
 
-void dfs(vector<int> partial, int try_start)
+void dfs(vector<int> partial, int try_start, int world_rank)
 {
+    Ans = Ans_buffer;
     /* if current size + untouched vertices <= current best, don't bother searching it */
     if((int)partial.size() + N - try_start + 1 <= Ans)
     {
@@ -45,13 +47,16 @@ void dfs(vector<int> partial, int try_start)
             vector<int> new_set = partial;
             new_set.push_back(i);
 #pragma omp task
-            dfs(new_set, i + 1);
+            dfs(new_set, i + 1, world_rank);
         }
     }
     if((int)partial.size() > Ans)
     {
         Ans=partial.size();
+        Ans_buffer = Ans;
     }
+#pragma omp master
+    MPI::COMM_WORLD.Bcast(&Ans_buffer, 1, MPI::INT, world_rank);
 }
 
 int main(int argc, char* argv[])
@@ -97,7 +102,7 @@ int main(int argc, char* argv[])
                 vector<int> partial;
                 partial.push_back(i);
 #pragma omp task
-                dfs(partial, i + 1);
+                dfs(partial, i + 1, world_rank);
             }
         }
     }
