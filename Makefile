@@ -1,5 +1,5 @@
 serial: serial.cpp
-	g++ serial.cpp -o serial
+	g++ serial.cpp -O3 -o serial
 
 debug: serial.cpp
 	g++ serial.cpp -D DEBUG -o serial 
