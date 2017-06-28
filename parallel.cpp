@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+//#include <mpi.h>
 
 using namespace std;
 
@@ -51,8 +52,17 @@ void dfs(vector<int> partial, int try_start)
     }
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    /* init MPI */
+    /*
+    MPI_Init(&argc, &argv);
+
+    int world_size;
+    int world_rank;
+    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+    */
     /* parse data */
     ifstream ifs;
     ifs.open ("data", ifstream::in);
@@ -66,15 +76,28 @@ int main()
     }
     ifs.close();
 
+    int work_start = 1;
+    int work_end = N;
+
     vector<int> partial;
     Ans=0;
 #pragma omp parallel
     {
 #pragma omp single
         {
-            dfs(partial, 1);
+            for (int i = work_start; i <= work_end; i++)
+            {
+                vector<int> partial;
+                partial.push_back(i);
+#pragma omp task
+                dfs(partial, i + 1);
+            }
         }
     }
     printf("%d\n", Ans);
+    /*
+    MPI_Finalize();
+    */
     return 0;
 }
+
