@@ -10,10 +10,10 @@
 using namespace std;
 
 const int MAXN=512;
-const int MACH_NUM = 4;
+const int MACH_NUM = 3;
 int N;                  /* graph size */
 bool Edge[MAXN][MAXN];  /* edge table */
-const float workload_partition[MACH_NUM + 1] = {0, 0.1, 0.3, 0.6, 1.0};
+const float workload_partition[MACH_NUM + 1] = {0, 0.2, 0.5, 1.0};
 #define DATA_PATH "/home/yangl1996/max-clique/data"
 
 int Ans;                /* best solution so far */
