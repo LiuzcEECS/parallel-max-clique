@@ -35,18 +35,16 @@ void dfs(vector<int> partial, int try_start)
         return;
     }
     /* try vertices with higher index */
-    int not_final = 0;
     for(int i = try_start; i <= N; ++i)
     {
         if(is_clique(partial, i))
         {
-            not_final = 1;
             vector<int> new_set = partial;
             new_set.push_back(i);
             dfs(new_set, i + 1);
         }
     }
-    if(!not_final && partial.size() > Ans)
+    if(partial.size() > Ans)
     {
         Ans=partial.size();
     }
