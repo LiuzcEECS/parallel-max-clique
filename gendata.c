@@ -12,6 +12,10 @@ int main(int argc, char* argv[])
     }
     int graphSize = atoi(argv[1]);
     int edgeNum = atoi(argv[2]);
+    if (edgeNum * 2 + graphSize > graphSize * graphSize)
+    {
+        printf("Too many edges\n");
+    }
     int* graph = calloc(graphSize * graphSize, sizeof(int));
     FILE* writeFile = fopen(DATA_NAME, "w");
     fprintf(writeFile, "%d\n", graphSize);
@@ -22,10 +26,19 @@ int main(int argc, char* argv[])
         int a, b;
         a = rand() % graphSize;
         b = rand() % graphSize;
+        if (graph[a * graphSize + b])
+        {
+            i--;
+            continue;
+        }
         if (a != b)
         {
             graph[a * graphSize + b] = 1;
             graph[b * graphSize + a] = 1;
+        }
+        else
+        {
+            i--;
         }
     }
     for (i = 0; i < graphSize; i++)
