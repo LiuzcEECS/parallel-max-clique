@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const int MAXN=60;
+const int MAXN=512;
 int N;                  /* graph size */
 bool Edge[MAXN][MAXN];  /* edge table */
 
