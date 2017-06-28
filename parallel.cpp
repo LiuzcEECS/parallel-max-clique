@@ -5,13 +5,15 @@
 #include <algorithm>
 #include <vector>
 #include <map>
-//#include <mpi.h>
+#include <mpi.h>
 
 using namespace std;
 
 const int MAXN=512;
+const int MACH_NUM = 4;
 int N;                  /* graph size */
 bool Edge[MAXN][MAXN];  /* edge table */
+const float workload_partition[MACH_NUM + 1] = {0, 0.1, 0.3, 0.6, 1.0};
 
 int Ans;                /* best solution so far */
 
@@ -31,7 +33,7 @@ bool is_clique(const vector<int> partial, const int to_add)
 void dfs(vector<int> partial, int try_start)
 {
     /* if current size + untouched vertices <= current best, don't bother searching it */
-    if(partial.size() + N - try_start + 1 <= Ans)
+    if((int)partial.size() + N - try_start + 1 <= Ans)
     {
         return;
     }
@@ -46,7 +48,7 @@ void dfs(vector<int> partial, int try_start)
             dfs(new_set, i + 1);
         }
     }
-    if(partial.size() > Ans)
+    if((int)partial.size() > Ans)
     {
         Ans=partial.size();
     }
@@ -55,14 +57,18 @@ void dfs(vector<int> partial, int try_start)
 int main(int argc, char* argv[])
 {
     /* init MPI */
-    /*
-    MPI_Init(&argc, &argv);
 
-    int world_size;
-    int world_rank;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-    */
+    MPI::Init();
+
+    int world_size = MPI::COMM_WORLD.Get_size();
+    int world_rank = MPI::COMM_WORLD.Get_rank();
+    
+    if (world_size != MACH_NUM)
+    {
+        printf("wrong MPI process number, please start %d processes\n", MACH_NUM);
+        MPI::Finalize();
+        exit(1);
+    }
     /* parse data */
     ifstream ifs;
     ifs.open ("data", ifstream::in);
@@ -76,8 +82,9 @@ int main(int argc, char* argv[])
     }
     ifs.close();
 
-    int work_start = 1;
-    int work_end = N;
+    int work_start, work_end;
+    work_start = N * workload_partition[world_rank] + 1;
+    work_end = N * workload_partition[world_rank + 1];
 
     vector<int> partial;
     Ans=0;
@@ -94,10 +101,24 @@ int main(int argc, char* argv[])
             }
         }
     }
-    printf("%d\n", Ans);
-    /*
-    MPI_Finalize();
-    */
+    int recv_buffer[MACH_NUM];
+    MPI::COMM_WORLD.Gather(&Ans, 1, MPI::INT, recv_buffer, 1, MPI::INT, 0);
+
+    if (world_rank == 0)
+    {
+        int final_ans = 0;
+        for (int i = 0; i < MACH_NUM; i++)
+        {
+            if (recv_buffer[i] > final_ans)
+            {
+                final_ans = recv_buffer[i];
+            }
+        }
+        printf("%d\n", final_ans);
+    }
+
+    MPI::Finalize();
+
     return 0;
 }
 
