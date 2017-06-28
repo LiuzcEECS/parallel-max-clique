@@ -41,6 +41,7 @@ void dfs(vector<int> partial, int try_start)
         {
             vector<int> new_set = partial;
             new_set.push_back(i);
+#pragma omp task
             dfs(new_set, i + 1);
         }
     }
@@ -67,7 +68,13 @@ int main()
 
     vector<int> partial;
     Ans=0;
-    dfs(partial, 1);
+#pragma omp parallel
+    {
+#pragma omp single
+        {
+            dfs(partial, 1);
+        }
+    }
     printf("%d\n", Ans);
     return 0;
 }
