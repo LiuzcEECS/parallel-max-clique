@@ -12,4 +12,4 @@ clean:
 
 test: serial parallel
 	time ./serial
-	time ./parallel
+	time mpirun -np 4 -hosts ceca19,ceca23,ceca24 ./parallel

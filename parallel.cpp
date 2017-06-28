@@ -14,6 +14,7 @@ const int MACH_NUM = 4;
 int N;                  /* graph size */
 bool Edge[MAXN][MAXN];  /* edge table */
 const float workload_partition[MACH_NUM + 1] = {0, 0.1, 0.3, 0.6, 1.0};
+#define DATA_PATH "/home/yangl1996/max-clique/data"
 
 int Ans;                /* best solution so far */
 int Ans_buffer;
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
     }
     /* parse data */
     ifstream ifs;
-    ifs.open ("data", ifstream::in);
+    ifs.open (DATA_PATH, ifstream::in);
     ifs >> N;
     for(int i = 1; i <= N; ++i)
     {
