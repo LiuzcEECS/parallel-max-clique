@@ -8,8 +8,10 @@
 
 using namespace std;
 
-const int MAXN=512;
+#define DATA_PATH "/home/parallel_class/s1400012853/project/data/txt/300-25.txt"
+const int MAXN=4096;
 int N;                  /* graph size */
+int E;                  /* edge size  */
 bool Edge[MAXN][MAXN];  /* edge table */
 
 int Ans;                /* best solution so far */
@@ -54,8 +56,17 @@ int main()
 {
     /* parse data */
     ifstream ifs;
-    ifs.open ("data", ifstream::in);
-    ifs >> N;
+    ifs.open(DATA_PATH, ifstream::in);
+    ifs >> N >> E;
+    int t1, t2;
+    for(int i = 1; i <= E; ++i){
+        ifs >> t1 >> t2;
+        //printf("%d %d\n", t1, t2);
+        //fflush(stdout);
+        Edge[t1][t2] = Edge[t2][t1] = 1;
+    }
+
+    /*
     for(int i = 1; i <= N; ++i)
     {
         for(int j = 1; j <= N; ++j)
@@ -63,6 +74,7 @@ int main()
             ifs >> Edge[i][j];
         }
     }
+    */
     ifs.close();
 
     vector<int> partial;
