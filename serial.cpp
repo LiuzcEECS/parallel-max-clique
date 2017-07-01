@@ -1,85 +1,61 @@
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <cstring>
-#include <algorithm>
-#include <vector>
-#include <map>
-
+#include <cstdio>
 using namespace std;
+const int N = 4000;
+bool G[N][N];
+int n, Max[N], Alt[N][N], ans;
+struct MAX_CLIQUE {
 
-#define DATA_PATH "/home/parallel_class/s1400012853/project/data/txt/300-25.txt"
-const int MAXN=4096;
-int N;                  /* graph size */
-int E;                  /* edge size  */
-bool Edge[MAXN][MAXN];  /* edge table */
 
-int Ans;                /* best solution so far */
-
-/* determine whether current_set + to_add is a clique */
-bool is_clique(const vector<int> partial, const int to_add)
-{
-    for(vector<int>::const_iterator it = partial.begin(); it != partial.end(); ++it)
-    {
-        if(!Edge[*it][to_add])
-        {
-            return false;
+    bool DFS(int cur, int tot) {
+        if(cur==0) {
+            if(tot>ans) {
+                ans=tot;
+                return 1;
+            }
+            return 0;
         }
-    }
-    return true;
-}
-
-void dfs(vector<int> partial, int try_start)
-{
-    /* if current size + untouched vertices <= current best, don't bother searching it */
-    if(partial.size() + N - try_start + 1 <= Ans)
-    {
-        return;
-    }
-    /* try vertices with higher index */
-    for(int i = try_start; i <= N; ++i)
-    {
-        if(is_clique(partial, i))
-        {
-            vector<int> new_set = partial;
-            new_set.push_back(i);
-            dfs(new_set, i + 1);
+        for(int i=0; i<cur; i++) {
+            if(cur-i+tot<=ans) return 0;
+            int u=Alt[tot][i];
+            if(Max[u]+tot<=ans) return 0;
+            int nxt=0;
+            for(int j=i+1; j<cur; j++)
+                if(G[u][Alt[tot][j]]) Alt[tot+1][nxt++]=Alt[tot][j];
+            if(DFS(nxt, tot+1)) return 1;
         }
+        return 0;
     }
-    if(partial.size() > Ans)
-    {
-        Ans=partial.size();
-    }
-}
 
-int main()
-{
-    /* parse data */
-    ifstream ifs;
-    ifs.open(DATA_PATH, ifstream::in);
-    ifs >> N >> E;
+    int MaxClique() {
+        ans=0, memset(Max, 0, sizeof Max);
+        for(int i=n-1; i>=0; i--) {
+            int cur=0;
+            memset(Alt, 0, sizeof(Alt));
+            for(int j=i+1; j<n; j++) if(G[i][j]) Alt[1][cur++]=j;
+            DFS(cur, 1);
+            Max[i]=ans;
+        }
+        return ans;
+    }
+};
+
+MAX_CLIQUE a;
+int e;
+
+int main(int argc, char * argv[]) {
+    FILE * fp;
+    fp = fopen(argv[1], "r");
+    fscanf(fp, "%d", &n);
+    int i, j, k, l;
     int t1, t2;
-    for(int i = 1; i <= E; ++i){
-        ifs >> t1 >> t2;
-        //printf("%d %d\n", t1, t2);
-        //fflush(stdout);
-        Edge[t1][t2] = Edge[t2][t1] = 1;
+    memset(G, sizeof(G), 0);
+    for(i = 1; i <= n; i++){
+        for(j = 1; j <= n; j++)fscanf(fp, "%d ", &G[i-1][j-1]);
     }
-
-    /*
-    for(int i = 1; i <= N; ++i)
-    {
-        for(int j = 1; j <= N; ++j)
-        {
-            ifs >> Edge[i][j];
-        }
-    }
-    */
-    ifs.close();
-
-    vector<int> partial;
-    Ans=0;
-    dfs(partial, 1);
-    printf("%d\n", Ans);
+    printf("%d %d\n", n, e);
+    fflush(stdout);
+    printf("%d\n", a.MaxClique());
     return 0;
 }

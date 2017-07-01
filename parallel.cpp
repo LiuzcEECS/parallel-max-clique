@@ -55,7 +55,7 @@ bool dfs(int cur, int tot, int world_rank, int proc)
     {
         if(cur - i + tot <= Ans) return 0;
         int u = S[proc][tot][i];
-        if(Max[u] > 0 and Max[u] + tot + 1 <= Ans) return 0;
+        if(Max[u] > 0 and Max[u] + tot <= Ans) return 0;
         int nxt = 0;
         for(int j = i + 1; j < cur; j++)
             if(Edge[u][S[proc][tot][j]]) S[proc][(tot+1)][nxt++] = S[proc][tot][j];
@@ -79,16 +79,10 @@ int main(int argc, char* argv[])
     int world_size = MPI::COMM_WORLD.Get_size();
     int world_rank = MPI::COMM_WORLD.Get_rank();
     
-    if (world_size != MACH_NUM)
-    {
-        printf("wrong MPI process number, please start %d processes\n", MACH_NUM);
-        MPI::Finalize();
-        exit(1);
-    }
     /* parse data */
     ifstream ifs;
     ifs.open(argv[1], ifstream::in);
-    ifs >> N ;
+    ifs >> N;
     for(int i = 1; i <= N; ++i)
     {
         for(int j = 1; j <= N; ++j)
@@ -117,12 +111,12 @@ int main(int argc, char* argv[])
     {
 #pragma omp single
         {
-            for(int i = work_end; i >= work_start; i--)
+            for(int i = N-1; i >= 0; i--)
             {
 #pragma omp task
                 {
                     int cur = 0;
-                    for(int j = i + 1; j < work_end; j++) if(Edge[i][j]) S[i][1][cur++] = j;
+                    for(int j = i + 1; j < N; j++) if(Edge[i][j]) S[i][1][cur++] = j;
                     dfs(cur, 1, world_rank, i);
                     Max[i] = Max_Buffer[i];
                 }
